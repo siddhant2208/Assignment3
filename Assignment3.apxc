@@ -1,0 +1,58 @@
+@RestResource(urlMapping='/accountService/*')
+global with sharing class Assignment3 {
+
+    @HttpPost
+    global static String createAccount(String name, String phoneNumber, String emailAddress, String residentialAddress) {
+        Account newAccount = new Account(
+            Name = name,
+            Phone = phoneNumber,
+            Email__c = emailAddress,
+            Residential_Address__c = residentialAddress
+        );
+        
+        insert newAccount;
+        return 'Account created successfully with ID: ' + newAccount.Id;
+    }
+
+    @HttpGet
+    global static Account getAccountById() {
+        RestRequest req = RestContext.request;
+        String accountId = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
+        
+        Account result = [SELECT Id, Name, Phone, Email__c, Residential_Address__c FROM Account WHERE Id = :accountId LIMIT 1];
+        return result;
+    }
+
+  @HttpPatch
+global static String updateAccount( String name, String phoneNumber, String emailAddress, String residentialAddress) {
+    RestRequest req = RestContext.request;
+        String accountId = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
+     Account acc = [SELECT Id, Name, Phone, Email__c, Residential_Address__c FROM Account WHERE Id = :accountId LIMIT 1];
+
+        acc.Name = name;
+
+        acc.Phone = phoneNumber;
+
+        acc.Email__c = emailAddress;
+
+        acc.Residential_Address__c  = residentialAddress;
+
+        update acc;
+    return 'Account updated successfully.';
+}
+
+  @HttpDelete
+global static String deleteAccount() {
+    RestRequest req = RestContext.request;
+    String accountId = req.requestURI.substring(req.requestURI.lastIndexOf('/') + 1);
+    
+    try {
+        Account accToDelete = [SELECT Id FROM Account WHERE Id = :accountId LIMIT 1];
+        delete accToDelete;
+        return 'Account deleted successfully.';
+    } catch (Exception e) {
+        return 'Error deleting account: ' + e.getMessage();
+    }
+}
+
+}
